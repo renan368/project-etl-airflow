@@ -23,12 +23,12 @@ def finalFunction():
     def getFiles():
 
         anos = ['02012023','03012023', '08122023']
+        files_path = []
         for ano in anos:
             name_file = f'COTAHIST_D{ano}.TXT'
             file_path = os.path.join('/opt/airflow/dags/src/data', name_file)
-            files_path = []
             files_path.append(file_path)
-            return files_path
+        return files_path
 
     @task
     def createStage(files_path):
