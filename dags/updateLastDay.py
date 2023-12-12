@@ -7,6 +7,10 @@ from src.repository import paperRepository
 from src.repository import pregaoRepository
 from src.service import fileService
 
+from sqlalchemy import  MetaData, Table, func
+from sqlalchemy.orm import sessionmaker
+from datetime import  datetime
+import pytz
 import os
 import pendulum
 from airflow.decorators import dag, task
@@ -18,32 +22,40 @@ from airflow.decorators import dag, task
     tags=["pievi"],
 )
 
-def finalFunction():   
+def updateLastDay():
     @task
-    def getFiles():
-
-        anos = ['02012023','03012023', '08122023']
-        for ano in anos:
-            name_file = f'COTAHIST_D{ano}.TXT'
-            file_path = os.path.join('/opt/airflow/dags/src/data', name_file)
-            files_path = []
-            files_path.append(file_path)
-            return files_path
-
+    def getFile():
+        fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
+        today = datetime.now(fuso_horario_brasil).date().strftime("%d%m%Y")
+        print(today)
+        
+        name_file = f'COTAHIST_D{today}.TXT'
+        file_path = os.path.join('/opt/airflow/dags/src/data', name_file)
+        return file_path
+    
     @task
-    def createStage(files_path):
-        conn = fileRepository.connectBdd()
-        fileRepository.drop_table(conn)
-        fileRepository.create_table(conn)
+    def updateStage(file_path):
+        engine = fileRepository.create_enginer()
 
-        for file_path in files_path:
+        metadata = MetaData()
+        btres = Table('btres', metadata, autoload=True, autoload_with=engine)
+        
+        Session = sessionmaker(bind=engine)
+        session = Session()
+
+        last_date = session.query(func.max(btres.c.data_pregao)).scalar()
+        
+        fuso_horario_brasil = pytz.timezone('America/Sao_Paulo')
+        today = datetime.now(fuso_horario_brasil).date()
+
+        if last_date and last_date < today:
             formattedFile = fileService.fommaterb3(file_path)
-            engine = fileRepository.create_enginer()
             formattedFile.to_sql('btres', engine, if_exists='append', index=False)
 
+        session.close()
 
     @task
-    def createStarSchema():
+    def updateStarSchema():
         conn = fileRepository.connectBdd()
 
         marketTypeRepository.create_table_market_type(conn)
@@ -67,11 +79,9 @@ def finalFunction():
         pregaoRepository.create_relation(conn)
 
 
-    files_path = getFiles()
-    stage = createStage(files_path)
-    starSchema = createStarSchema()
+    file_path = getFile()
+    stage = updateStage(file_path)
+    updateStarSchemas = updateStarSchema()
+    file_path >> stage >> updateStarSchemas
 
-    files_path >> stage >> starSchema
-
-
-finalFunction()
+updateLastDay()

@@ -6,10 +6,11 @@ def fommaterb3(fileb3):
 
     formattedB3 = pd.read_fwf(fileb3, widths=sizeFields, header=0)
 
-    print('cheguei ate aqui talvez')
-
     formattedB3.columns = ["tipo_registro","data_pregao","cod_bdi","cod_negociacao","tipo_mercado","nome_empresa","especificacao_papel","prazo_dias_merc_termo","moeda_referencia","preco_abertura","preco_maximo","preco_minimo","preco_medio","preco_ultimo_negocio","preco_melhor_oferta_compra","preco_melhor_oferta_venda","numero_negocios","quantidade_papeis_negociados","volume_total_negociado","preco_exercicio","indicador_correcao_precos","data_vencimento","fator_cotacao","preco_exercicio_pontos","codigo_isin","num_distribuicao_papel"]
     pd.set_option('display.max_columns', None)
+
+    line = len(formattedB3["data_pregao"])
+    formattedB3=formattedB3.drop(line-1)
 
     listaVirgula = ["preco_abertura","preco_maximo","preco_minimo","preco_medio","preco_ultimo_negocio","preco_melhor_oferta_compra","preco_melhor_oferta_venda","volume_total_negociado","preco_exercicio","preco_exercicio_pontos"]
 

@@ -13,7 +13,7 @@ def create_table_pregao(conn):
                     cod_negociacao varchar(255), 
                     especificacao_papel varchar(255),
                     numero bigint, 
-                    data_pregao varchar(255),
+                    data_pregao date,
                     preco_melhor_oferta_compra decimal, 
                     preco_melhor_oferta_venda decimal, 
                     moeda_referencia varchar(255), 
@@ -67,4 +67,45 @@ def insert_table_pregao(conn):
     '''
 
     conn.cursor().execute(insert)
+    conn.commit()
+
+def create_relation(conn):
+    relations ='''
+    ALTER TABLE IF EXISTS public.fato_pregao
+        ADD CONSTRAINT fk_cod_bdi FOREIGN KEY (cod_bdi)
+        REFERENCES public.dim_cod_bdi (cod_bdi) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID;
+
+    ALTER TABLE IF EXISTS public.fato_pregao
+        ADD CONSTRAINT fk_tipo_mercado FOREIGN KEY (tipo_mercado)
+        REFERENCES public.dim_tipo_mercado (tipo_mercado) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID;
+
+    ALTER TABLE IF EXISTS public.fato_pregao
+        ADD CONSTRAINT fk_empresa FOREIGN KEY (cod_negociacao)
+        REFERENCES public.dim_empresa (cod_negociacao) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID;
+
+    ALTER TABLE IF EXISTS public.fato_pregao
+        ADD CONSTRAINT fk_papel FOREIGN KEY (especificacao_papel)
+        REFERENCES public.dim_papel (especificacao_papel) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID;
+
+    ALTER TABLE IF EXISTS public.fato_pregao
+        ADD CONSTRAINT fk_correcao_preco FOREIGN KEY (numero)
+        REFERENCES public.dim_correcao_preco (numero) MATCH SIMPLE
+        ON UPDATE NO ACTION
+        ON DELETE NO ACTION
+        NOT VALID;
+    '''
+
+    conn.cursor().execute(relations)
     conn.commit()

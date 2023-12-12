@@ -10,13 +10,22 @@ def connectBdd():
     conn = hook.get_conn()
     return conn
     
+def drop_table(conn): 
+    drop ='''
+    DROP TABLE IF EXISTS btres
+    '''
+
+    conn.cursor().execute(drop)
+    conn.commit()
+    conn.cursor().close()
+    
 def create_table(conn):
 
     create = '''
     CREATE TABLE IF NOT EXISTS btres (
         id_pregao bigserial primary key
         , tipo_registro bigint
-        , data_pregao varchar(255)
+        , data_pregao date
         , cod_bdi bigint
         , cod_negociacao varchar(255)
         , tipo_mercado bigint
