@@ -12,7 +12,7 @@ import pendulum
 from airflow.decorators import dag, task
 
 @dag(
-    schedule='0 */6 * * * ',
+    schedule='1 0 1 1 *',
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     tags=["pievi"],
